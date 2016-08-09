@@ -1,0 +1,63 @@
+---
+output: pdf_document
+---
+## Automatic or manual transmission better for mpg(miles per gallon)?
+### Interested question
+Is automatic or manual transimission better for mpg? 
+
+### Data description
+Our used dataset is **mtcars** along with R software.  
+**am** is one column in **mtcars**, and it only has two values:
+
+* 0 : automatic transimission
+* 1 : manual transimission
+
+```{r setup, echo = FALSE}
+library(ggplot2)
+```
+
+### Exploratory data analysis
+First, let's get some intuitive information from a boxplot between mpg and am. Figure 1 is the plot(in Appendix). And we can have an intuition that **manual transimission is better for miles per gallon**. Next, we will search the right model for mpg.
+
+### Linear regression
+We want to establish a linear model for mpg. First, let's try everything in.
+
+```{r}
+fit1 <- lm(mpg ~ ., data = mtcars)
+summary(fit1)$coef
+```
+
+p-values are all greater than 0.05 and the model may contain too many variables that have no relation with mpg. We filter out these variables one by one to get a reasonable model. Finally, the appropriate model is:
+
+```{r}
+fit2 <- lm(mpg ~ wt + qsec + am - 1, data = mtcars)
+summary(fit2)
+```
+
+In our model, all three coefficients are significantly not equal to 0. And the model fits well, as the adjusted R squared is close to 1. We have quantified the mpg difference between automatic and manual transimission. The intepretation is: **holding all other variables constant, there is a 4.2995 rise in mpg from automatic to manual transimission, with a standard error of 1.0241.**
+
+Next, let's do a residual plot. As figure 2 shows, the residuals are just like noise. Figure 3 is the QQ-plot of residuals. And we can see that residuals are almost normal. We are ensured that the model fits well.
+
+### Summary
+Manual transimission is better for mpg than automatic transimission. For people who want to save fuel using, manual transimission cars are preferred. And for car manufacturers, it's a good choice to optimize automatic transimission cars fuel use, to optimize the inner engine.
+
+
+---
+## Appendix
+```{r figure 1, echo = FALSE, fig.width=7, fig.height=4}
+g <- ggplot(data = mtcars, aes(x = factor(am, labels = c("Auto", "Manual")), y = mpg))
+g <- g + geom_boxplot() + labs(x = "Transimission")
+g <- g + labs(title = "Figure 1: am VS mpg boxplot")
+g
+```
+
+```{r figure 2, echo = FALSE, fig.width=7, fig.height=4}
+qplot(x = 1:length(resid(fit2)), resid(fit2),
+      main = "Figure 2: residual plot")
+```
+
+```{r figure 3, echo = FALSE, fig.width=4, fig.height=4}
+qqnorm(resid(fit2), main = "Figure 3: Normal QQ-plot of residuals")
+qqline(resid(fit2), col = "blue")
+```
+
